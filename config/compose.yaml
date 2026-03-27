@@ -1,0 +1,130 @@
+# =============================================================================
+# icloudpd - Multi-Account iCloud Foto/Video Backup
+# =============================================================================
+# Ablage: /volume1/docker/icloudpd/compose.yaml
+#
+# Zugangsdaten in /volume1/docker/icloudpd/.env eintragen.
+# Docker Compose liest .env automatisch aus dem gleichen Ordner.
+#
+# ACCOUNT AKTIVIEREN:
+#   1. # vor dem Service-Block entfernen
+#   2. Variablen in .env einkommentieren und befüllen
+#   3. sudo docker-compose -f compose.yaml up -d icloudpd-NAME
+#
+# ACCOUNT DEAKTIVIEREN (kein weiterer Sync):
+#   1. Service-Block wieder auskommentieren
+#   2. Account in run-all.sh ACCOUNTS Liste auskommentieren
+#   → Daten auf der NAS bleiben erhalten
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNT 1 — aktiv
+  # ---------------------------------------------------------------------------
+  icloudpd-account1:
+    image: icloudpd/icloudpd:latest
+    container_name: icloudpd-account1
+
+    # "no" = einmaliger Sync-Job, kein Dauerdienst.
+    # Container startet und stoppt automatisch nach dem Download.
+    restart: "no"
+
+    volumes:
+      # Session-Cookie nach 2FA-Auth — genauso schützenswert wie das Passwort
+      - ./accounts/account1/cookies:/config
+      # Zielordner für Fotos & Videos auf der NAS
+      - /volume2/Backups/icloud/account1:/data
+
+    environment:
+      - TZ=Europe/Berlin
+
+    command:
+      - icloudpd
+      - --username
+      - ${ICLOUD_USER_ACCOUNT1}
+      - --password
+      - ${ICLOUD_PASS_ACCOUNT1}
+      - --directory
+      - /data
+      - --cookie-directory
+      - /config
+      # Ordnerstruktur: /data/2024/03/foto.jpg
+      # Alternativen: {:%Y/%m/%d} für Tagesordner, {:%Y} für nur Jahr
+      - --folder-structure
+      - "{:%Y/%m}"
+      # --auto-delete: Löscht Dateien auf NAS wenn in iCloud gelöscht.
+      # Weglassen für echtes Backup-Verhalten (empfohlen).
+      - --auto-delete
+      - --log-level
+      - info
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNT 2 — auskommentiert bis eingerichtet
+  # ---------------------------------------------------------------------------
+  # icloudpd-account2:
+  #   image: icloudpd/icloudpd:latest
+  #   container_name: icloudpd-account2
+  #   restart: "no"
+  #   volumes:
+  #     - ./accounts/account2/cookies:/config
+  #     - /volume2/Backups/icloud/account2:/data
+  #   environment:
+  #     - TZ=Europe/Berlin
+  #   command:
+  #     - icloudpd
+  #     - --username
+  #     - ${ICLOUD_USER_ACCOUNT2}
+  #     - --password
+  #     - ${ICLOUD_PASS_ACCOUNT2}
+  #     - --directory
+  #     - /data
+  #     - --cookie-directory
+  #     - /config
+  #     - --folder-structure
+  #     - "{:%Y/%m}"
+  #     - --auto-delete
+  #     - --log-level
+  #     - info
+
+  # ---------------------------------------------------------------------------
+  # ACCOUNT 3 — auskommentiert bis eingerichtet
+  # ---------------------------------------------------------------------------
+  # icloudpd-account3:
+  #   image: icloudpd/icloudpd:latest
+  #   container_name: icloudpd-account3
+  #   restart: "no"
+  #   volumes:
+  #     - ./accounts/account3/cookies:/config
+  #     - /volume2/Backups/icloud/account3:/data
+  #   environment:
+  #     - TZ=Europe/Berlin
+  #   command:
+  #     - icloudpd
+  #     - --username
+  #     - ${ICLOUD_USER_ACCOUNT3}
+  #     - --password
+  #     - ${ICLOUD_PASS_ACCOUNT3}
+  #     - --directory
+  #     - /data
+  #     - --cookie-directory
+  #     - /config
+  #     - --folder-structure
+  #     - "{:%Y/%m}"
+  #     - --auto-delete
+  #     - --log-level
+  #     - info
+
+# =============================================================================
+# VERWENDUNG
+# =============================================================================
+#
+# Einzelnen Account manuell starten (z.B. zum Testen):
+#   docker-compose -f compose.yaml run --rm icloudpd-account1
+#
+# Container erstellen (einmalig, danach via run-all.sh):
+#   docker-compose -f compose.yaml up -d icloudpd-account1
+#
+# Logs:
+#   docker logs -f icloudpd-account1
+# =============================================================================

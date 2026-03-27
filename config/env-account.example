@@ -1,0 +1,16 @@
+# =============================================================================
+# icloudpd Account Zugangsdaten
+# =============================================================================
+# Ablage: /volume1/docker/icloudpd/accounts/ACCOUNTNAME/.env
+# Berechtigungen: chmod 600 .env
+#
+# Diese Datei wird von run-all.sh und auth-all.sh verwendet.
+# Wird NICHT von Docker Compose direkt eingelesen.
+#
+# App-spezifisches Passwort erstellen:
+#   → appleid.apple.com → Sicherheit → App-spezifische Passwörter → +
+#   → Name: icloudpd
+# =============================================================================
+
+ICLOUD_USER=appleID@example.com
+ICLOUD_PASS=xxxx-xxxx-xxxx-xxxx
