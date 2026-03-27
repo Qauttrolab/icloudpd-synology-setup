@@ -2,7 +2,7 @@
 
 > Automatisches Backup von iCloud Fotos & Videos auf eine Synology NAS via [icloudpd](https://github.com/icloudpd/icloudpd) mit Multi-Account Support, Docker Compose und automatisiertem Tagesbetrieb über den DSM Aufgabenplaner.
 
-**📖 [Vollständige Anleitung (HTML)](https://yourusername.github.io/icloudpd-synology-setup/)**
+**📖 [Vollständige Anleitung (HTML)](https://qauttrolab.github.io/icloudpd-synology-setup/)**
 
 ---
 
