@@ -15,7 +15,6 @@
 - ✅ Ordnerstruktur nach Jahr/Monat (`YYYY/MM`)
 - ✅ One-Way Sync — NAS löschen hat keinen Einfluss auf iCloud
 - ✅ Automatischer Tagesbetrieb via DSM Aufgabenplaner
-- ✅ Sauberer Shutdown-Task für alle Docker Container
 
 ---
 
@@ -37,10 +36,10 @@ sudo docker-compose -f compose.yaml up -d icloudpd-account1
 
 # 5. 2FA Auth durchführen
 sudo docker run -it --rm \
-  -v /volume1/docker/icloudpd/accounts/account1/cookies:/config \
-  icloudpd/icloudpd:latest \
-  icloudpd --username your@apple.id --password xxxx-xxxx-xxxx-xxxx \
-  --auth-only --cookie-directory /config
+ -v /volume1/docker/icloudpd/accounts/account1/cookies:/config \
+ icloudpd/icloudpd:latest \
+ icloudpd --username your@apple.id --password xxxx-xxxx-xxxx-xxxx \
+ --auth-only --cookie-directory /config
 ```
 
 **→ Vollständige Anleitung mit allen Schritten: [docs/index.html](docs/index.html)**
@@ -59,8 +58,7 @@ icloudpd-synology-setup/
 │   └── env-account.example ← Account .env Vorlage
 ├── scripts/
 │   ├── run-all.sh          ← Täglicher Sync aller Accounts
-│   ├── auth-all.sh         ← Einmalige 2FA-Authentifizierung
-│   └── docker-shutdown.sh  ← Sauberer Shutdown aller Container
+│   └── auth-all.sh         ← Einmalige 2FA-Authentifizierung
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md
