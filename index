@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>icloudpd — Synology NAS Setup Anleitung</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: rgb(15, 17, 23); color: rgb(224, 224, 224); line-height: 1.6; }
+.header { background: linear-gradient(135deg, rgb(26, 31, 46), rgb(45, 53, 97)); padding: 40px 20px; text-align: center; border-bottom: 2px solid rgb(79, 110, 247); }
+.header .logo { font-size: 2.8em; font-weight: 900; letter-spacing: -1px; }
+.header .logo span { color: rgb(56, 189, 248); }
+.header .logo em { color: rgb(79, 110, 247); font-style: normal; }
+.header .subtitle { color: rgb(136, 146, 176); font-size: 1.1em; margin-top: 8px; }
+.header .badges { margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.badge { background: rgb(30, 42, 69); border: 1px solid rgb(79, 110, 247); border-radius: 20px; padding: 4px 12px; font-size: 0.85em; color: rgb(126, 184, 247); }
+.container { max-width: 960px; margin: 0 auto; padding: 30px 20px; }
+.toc { background: rgb(26, 31, 46); border: 1px solid rgb(45, 53, 97); border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+.toc h2 { color: rgb(79, 110, 247); margin-bottom: 15px; font-size: 1.1em; }
+.toc ol { padding-left: 20px; }
+.toc li { margin: 6px 0; }
+.toc a { color: rgb(126, 184, 247); text-decoration: none; }
+.toc a:hover { color: #fff; }
+.section { background: rgb(26, 31, 46); border: 1px solid rgb(45, 53, 97); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+.section h2 { color: rgb(79, 110, 247); font-size: 1.4em; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.section h3 { color: rgb(126, 184, 247); font-size: 1.05em; margin: 20px 0 10px; }
+.section p { color: rgb(160, 174, 192); margin: 10px 0; }
+.step-num { background: rgb(79, 110, 247); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85em; font-weight: bold; flex-shrink: 0; }
+.code-block { position: relative; background: rgb(13, 17, 23); border: 1px solid rgb(45, 53, 97); border-radius: 8px; padding: 15px; margin: 10px 0; overflow-x: auto; }
+.code-block pre { font-family: "Courier New", monospace; font-size: 0.8em; color: rgb(226, 232, 240); white-space: pre; word-break: normal; }
+.copy-btn { position: absolute; top: 8px; right: 8px; background: rgb(45, 53, 97); border: 1px solid rgb(79, 110, 247); color: rgb(126, 184, 247); border-radius: 6px; padding: 4px 10px; font-size: 0.75em; cursor: pointer; transition: 0.2s; z-index: 1; }
+.copy-btn:hover { background: rgb(79, 110, 247); color: #fff; }
+.copy-btn.copied { background: rgb(34, 197, 94); border-color: rgb(34, 197, 94); color: #fff; }
+.info-box { border-left: 4px solid rgb(79, 110, 247); border-radius: 0 8px 8px 0; padding: 12px 15px; margin: 10px 0; background: rgb(30, 58, 95); }
+.info-box.success { background: rgb(26, 58, 42); border-left-color: rgb(34, 197, 94); }
+.info-box.warning { background: rgb(58, 42, 26); border-left-color: rgb(245, 158, 11); }
+.info-box.danger { background: rgb(58, 26, 26); border-left-color: rgb(192, 57, 43); }
+.info-box p { color: rgb(160, 174, 192); margin: 4px 0; font-size: 0.9em; }
+.info-box strong { color: rgb(224, 224, 224); }
+.table-wrap { overflow-x: auto; margin: 15px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+th { background: rgb(45, 53, 97); color: rgb(126, 184, 247); padding: 10px 15px; text-align: left; }
+td { padding: 10px 15px; border-bottom: 1px solid rgb(45, 53, 97); color: rgb(160, 174, 192); }
+tr:last-child td { border-bottom: none; }
+.summary-box { background: linear-gradient(135deg, rgb(26, 42, 58), rgb(26, 58, 42)); border: 1px solid rgb(34, 197, 94); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+.summary-box h2 { color: rgb(34, 197, 94); margin-bottom: 15px; }
+.footer { text-align: center; padding: 30px; color: rgb(74, 85, 104); font-size: 0.85em; border-top: 1px solid rgb(45, 53, 97); margin-top: 30px; }
+code { color: rgb(126, 184, 247); background: rgb(30, 42, 69); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+ul { padding-left: 20px; color: rgb(160, 174, 192); }
+ul li { margin: 6px 0; }
+ol { padding-left: 20px; color: rgb(160, 174, 192); }
+ol li { margin: 8px 0; }
+.tab-group { margin: 15px 0; }
+.tab-buttons { display: flex; gap: 0; margin-bottom: 0; }
+.tab-btn { padding: 8px 16px; font-size: 0.85em; font-weight: 600; cursor: pointer; border: 1px solid rgb(45, 53, 97); border-bottom: none; background: rgb(15, 17, 23); color: rgb(107, 114, 128); border-radius: 8px 8px 0 0; transition: 0.15s; }
+.tab-btn:hover { color: rgb(224, 224, 224); background: rgb(26, 31, 46); }
+.tab-btn.active-gui { background: rgb(30, 58, 95); color: rgb(126, 184, 247); border-color: rgb(79, 110, 247) rgb(79, 110, 247) rgb(30, 58, 95); border-bottom: 1px solid rgb(30, 58, 95); }
+.tab-btn.active-cli { background: rgb(26, 42, 26); color: rgb(134, 239, 172); border-color: rgb(34, 197, 94) rgb(34, 197, 94) rgb(26, 42, 26); border-bottom: 1px solid rgb(26, 42, 26); }
+.tab-btn .tab-icon { margin-right: 5px; }
+.tab-pane { display: none; border: 1px solid rgb(45, 53, 97); border-radius: 0 8px 8px 8px; padding: 18px; background: rgb(19, 24, 32); }
+.tab-pane.pane-gui { border-color: rgb(79, 110, 247); background: rgb(14, 24, 37); }
+.tab-pane.pane-cli { border-color: rgb(34, 197, 94); background: rgb(14, 26, 14); }
+.tab-pane.active { display: block; }
+.tab-pane p { color: rgb(160, 174, 192); margin: 8px 0; }
+.tab-pane ul { color: rgb(160, 174, 192); }
+.gui-step { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; }
+.gui-step-num { background: rgb(79, 110, 247); color: #fff; border-radius: 50%; min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75em; font-weight: bold; flex-shrink: 0; margin-top: 2px; }
+.gui-step p { margin: 0; color: rgb(160, 174, 192); }
+.cli-note { font-size: 0.8em; color: rgb(107, 114, 128); margin-top: 8px; font-style: italic; }
+.chmod-note { display: inline-flex; align-items: center; gap: 6px; background: rgb(58, 42, 26); border: 1px solid rgb(245, 158, 11); border-radius: 6px; padding: 3px 10px; font-size: 0.8em; color: rgb(245, 158, 11); margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><span>icloud</span><em>pd</em></div>
+  <div style="margin-top:8px; font-size:1.1em; color:#fff; font-weight:600;">icloudpd — Synology NAS Setup Anleitung</div>
+  <div class="subtitle">Multi-Account · Docker Compose · Automatischer Sync · DSM 7.3 · Aufgabenplaner</div>
+  <div class="badges">
+    <span class="badge">icloudpd latest</span>
+    <span class="badge">Docker Compose</span>
+    <span class="badge">Synology DSM 7.3</span>
+    <span class="badge">Multi-Account</span>
+    <span class="badge">run-all.sh</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="toc">
+    <h2>📋 Inhaltsverzeichnis</h2>
+    <ol>
+      <li><a href="#uebersicht">Übersicht &amp; Architektur</a></li>
+      <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+      <li><a href="#ordner">Ordnerstruktur anlegen</a></li>
+      <li><a href="#env">ENV Dateien erstellen</a></li>
+      <li><a href="#compose">compose.yaml einrichten</a></li>
+      <li><a href="#auth">2FA Authentifizierung</a></li>
+      <li><a href="#run-all">run-all.sh — Automatisierter Sync</a></li>
+      <li><a href="#aufgabenplaner">DSM Aufgabenplaner einrichten</a></li>
+      <li><a href="#account-hinzufuegen">Neuen Account hinzufügen</a></li>
+      <li><a href="#logs">Logs &amp; Monitoring</a></li>
+      <li><a href="#hinweise">Hinweise &amp; Besonderheiten</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. ÜBERSICHT -->
+  <div class="section" id="uebersicht">
+    <h2><span class="step-num">1</span> Übersicht &amp; Architektur</h2>
+    <p>icloudpd lädt Fotos und Videos aus iCloud automatisch auf die Synology NAS herunter. Jeder iCloud Account bekommt einen eigenen Docker Container und einen eigenen Zielordner.</p>
+    <div class="table-wrap" style="margin-top:15px;">
+      <table>
+        <tr><th>#</th><th>Container</th><th>Funktion</th><th>Zielordner</th></tr>
+        <tr><td>1</td><td><code>icloudpd-account1</code></td><td>Download Account 1</td><td><code>/volume2/Backups/icloud/account1/</code></td></tr>
+        <tr><td>2</td><td><code>icloudpd-account2</code></td><td>Download Account 2</td><td><code>/volume2/Backups/icloud/account2/</code></td></tr>
+        <tr><td>…</td><td><code>icloudpd-accountN</code></td><td>Download Account N</td><td><code>/volume2/Backups/icloud/accountN/</code></td></tr>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:15px;">
+      <p><strong>One-Way Sync:</strong> icloudpd lädt nur herunter — Löschen auf der NAS hat keinen Einfluss auf iCloud.</p>
+    </div>
+    <div class="info-box warning" style="margin-top:10px;">
+      <p><strong>restart: "no"</strong> — icloudpd ist ein einmaliger Sync-Job, kein Dauerdienst. Container starten und stoppen automatisch nach dem Download.</p>
+    </div>
+  </div>
+
+  <!-- 2. VORAUSSETZUNGEN -->
+  <div class="section" id="voraussetzungen">
+    <h2><span class="step-num">2</span> Voraussetzungen</h2>
+    <ul>
+      <li>Synology NAS mit DSM 7.3+</li>
+      <li>Container Manager installiert (Paket-Zentrum)</li>
+      <li>SSH-Zugang aktiviert (Systemsteuerung → Terminal &amp; SNMP)</li>
+      <li>Pro iCloud Account ein <strong>App-spezifisches Passwort</strong></li>
+    </ul>
+    <h3>App-spezifisches Passwort erstellen</h3>
+    <p>Das normale Apple ID Passwort funktioniert <strong>nicht</strong>. Für jeden Account ein app-spezifisches Passwort erstellen:</p>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'app-pass-browser')"><span class="tab-icon">🖥️</span> Browser</button>
+      </div>
+      <div id="app-pass-browser" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>Browser öffnen → <a href="https://appleid.apple.com" target="_blank" style="color:rgb(126,184,247)">appleid.apple.com</a> → Mit Apple ID anmelden</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p><strong>Anmelden &amp; Sicherheit</strong> → <strong>App-spezifische Passwörter</strong> → <strong>+</strong></p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Name eingeben: <code>icloudpd</code> → Passwort notieren (Format: <code>xxxx-xxxx-xxxx-xxxx</code>)</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p>Diesen Schritt für jeden Account wiederholen</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ORDNERSTRUKTUR -->
+  <div class="section" id="ordner">
+    <h2><span class="step-num">3</span> Ordnerstruktur anlegen</h2>
+    <p>Configs und Cookies auf volume1 (SSD), Foto/Video-Daten auf volume2 (HDD).</p>
+    <h3>3.1 Config-Ordner anlegen (volume1 / SSD)</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'ordner-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'ordner-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="ordner-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station öffnen → zu <code>/volume1/docker/</code> navigieren</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Neuen Ordner <code>icloudpd</code> erstellen</p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Darin Unterordner <code>accounts</code> und <code>logs</code> erstellen</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p>In <code>accounts</code> pro Account einen Ordner erstellen: z.B. <code>account1</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">5</span><p>In jedem Account-Ordner einen Unterordner <code>cookies</code> erstellen</p></div>
+        <p class="cli-note">💡 SSH ist hier deutlich schneller — ein Befehl erstellt alle Ordner auf einmal.</p>
+      </div>
+      <div id="ordner-cli" class="tab-pane pane-cli">
+        <p>Alle Ordner auf einmal — pro Account eine Zeile:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>mkdir -p /volume1/docker/icloudpd/accounts/account1/cookies
+mkdir -p /volume1/docker/icloudpd/accounts/account2/cookies
+mkdir -p /volume1/docker/icloudpd/logs</pre>
+        </div>
+      </div>
+    </div>
+    <h3>3.2 Backup-Ordner anlegen (volume2 / HDD)</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'backup-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'backup-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="backup-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station → <code>/volume2/</code> navigieren</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Neuen Shared Folder <code>Backups</code> erstellen (falls nicht vorhanden): Systemsteuerung → Gemeinsamer Ordner → Erstellen</p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>In <code>Backups</code> Ordner <code>icloud</code> erstellen</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p>Pro Account einen Unterordner erstellen: <code>account1</code>, <code>account2</code> usw.</p></div>
+      </div>
+      <div id="backup-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>mkdir -p /volume2/Backups/icloud/account1
+mkdir -p /volume2/Backups/icloud/account2</pre>
+        </div>
+      </div>
+    </div>
+    <h3>3.3 Ergebnis</h3>
+    <div class="code-block">
+      <pre>/volume1/docker/icloudpd/       ← Configs, Skripte, Cookies (SSD)
+├── accounts/
+│   ├── account1/
+│   │   ├── .env                ← Zugangsdaten (chmod 600!)
+│   │   └── cookies/            ← Session-Token (automatisch befüllt)
+│   └── account2/
+│       ├── .env
+│       └── cookies/
+├── logs/                       ← Sync-Logs
+├── compose.yaml                ← Container-Definitionen
+└── .env                        ← Zugangsdaten für Docker Compose (chmod 600!)
+
+/volume2/Backups/icloud/        ← Fotos &amp; Videos (HDD)
+├── account1/
+│   └── 2024/03/foto.jpg
+└── account2/</pre>
+    </div>
+  </div>
+
+  <!-- 4. ENV DATEIEN -->
+  <div class="section" id="env">
+    <h2><span class="step-num">4</span> ENV Dateien erstellen</h2>
+    <h3>4.1 Account-spezifische .env</h3>
+    <p>Pro Account eine eigene <code>.env</code> Datei anlegen:</p>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'env-acc-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'env-acc-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="env-acc-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station → <code>/volume1/docker/icloudpd/accounts/account1/</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Neue Textdatei erstellen, Name: <code>.env</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Inhalt einfügen:</p></div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ICLOUD_USER=appleID@example.com
+ICLOUD_PASS=xxxx-xxxx-xxxx-xxxx</pre>
+        </div>
+        <div class="info-box warning" style="margin-top:10px;">
+          <p><strong>Berechtigungen:</strong> In der File Station → Rechtsklick auf .env → Eigenschaften → Berechtigung → Nur Eigentümer darf lesen/schreiben setzen.</p>
+        </div>
+      </div>
+      <div id="env-acc-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/accounts/account1/.env</pre>
+        </div>
+        <p>Inhalt eintragen, speichern mit <code>Ctrl+O</code> → <code>Enter</code> → <code>Ctrl+X</code></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ICLOUD_USER=appleID@example.com
+ICLOUD_PASS=xxxx-xxxx-xxxx-xxxx</pre>
+        </div>
+        <p>Berechtigungen setzen <span class="chmod-note">⚠️ chmod erforderlich</span></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>chmod 600 /volume1/docker/icloudpd/accounts/account1/.env</pre>
+        </div>
+        <p>Prüfen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ls -la /volume1/docker/icloudpd/accounts/account1/.env
+# Ergebnis: -rw------- (nur Eigentümer darf lesen)</pre>
+        </div>
+      </div>
+    </div>
+    <h3>4.2 Root .env für Docker Compose</h3>
+    <p>Diese Datei liegt direkt in <code>/volume1/docker/icloudpd/</code> und wird von Docker Compose automatisch eingelesen.</p>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'env-root-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'env-root-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="env-root-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station → <code>/volume1/docker/icloudpd/</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Neue Textdatei erstellen, Name: <code>.env</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Inhalt einfügen — pro Account zwei Zeilen:</p></div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre># Account 1 — aktiv
+ICLOUD_USER_ACCOUNT1=appleID@example.com
+ICLOUD_PASS_ACCOUNT1=xxxx-xxxx-xxxx-xxxx
+
+# Account 2 — auskommentiert bis eingerichtet
+# ICLOUD_USER_ACCOUNT2=appleID2@example.com
+# ICLOUD_PASS_ACCOUNT2=xxxx-xxxx-xxxx-xxxx</pre>
+        </div>
+      </div>
+      <div id="env-root-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/.env</pre>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre># Account 1 — aktiv
+ICLOUD_USER_ACCOUNT1=appleID@example.com
+ICLOUD_PASS_ACCOUNT1=xxxx-xxxx-xxxx-xxxx
+
+# Account 2 — auskommentiert bis eingerichtet
+# ICLOUD_USER_ACCOUNT2=appleID2@example.com
+# ICLOUD_PASS_ACCOUNT2=xxxx-xxxx-xxxx-xxxx</pre>
+        </div>
+        <p>Berechtigungen setzen <span class="chmod-note">⚠️ chmod erforderlich</span></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>chmod 600 /volume1/docker/icloudpd/.env</pre>
+        </div>
+        <p>Alle .env auf einmal absichern:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>find /volume1/docker/icloudpd/accounts -name ".env" -exec chmod 600 {} \;</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. COMPOSE -->
+  <div class="section" id="compose">
+    <h2><span class="step-num">5</span> compose.yaml einrichten</h2>
+    <p>Die <code>compose.yaml</code> liegt in <code>/volume1/docker/icloudpd/</code>. Jeder Account ist ein eigener Service — nicht eingerichtete Accounts werden auskommentiert.</p>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'compose-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'compose-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="compose-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>Container Manager → Projekte → Erstellen</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Name: <code>icloudpd</code> | Pfad: <code>/volume1/docker/icloudpd</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>compose.yaml Inhalt einfügen (aus <code>config/compose.yaml</code> in diesem Repo)</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p>Speichern — Container werden erstellt aber nicht automatisch gestartet (<code>restart: "no"</code>)</p></div>
+        <div class="info-box warning" style="margin-top:10px;">
+          <p><strong>Wichtig:</strong> Die .env Datei muss bereits in <code>/volume1/docker/icloudpd/</code> liegen bevor das Projekt erstellt wird.</p>
+        </div>
+      </div>
+      <div id="compose-cli" class="tab-pane pane-cli">
+        <p>compose.yaml aus dem Repo kopieren oder manuell erstellen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/compose.yaml</pre>
+        </div>
+        <p>Danach Container erstellen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>cd /volume1/docker/icloudpd
+sudo docker-compose -f compose.yaml up -d icloudpd-account1</pre>
+        </div>
+        <p>Prüfen ob Container erstellt wurde:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo docker ps -a | grep icloudpd</pre>
+        </div>
+      </div>
+    </div>
+    <h3>compose.yaml Inhalt</h3>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+      <pre>services:
+
+  # Account 1 — aktiv
+  icloudpd-account1:
+    image: icloudpd/icloudpd:latest
+    container_name: icloudpd-account1
+    restart: "no"
+    volumes:
+      - ./accounts/account1/cookies:/config
+      - /volume2/Backups/icloud/account1:/data
+    environment:
+      - TZ=Europe/Berlin
+    command:
+      - icloudpd
+      - --username
+      - ${ICLOUD_USER_ACCOUNT1}
+      - --password
+      - ${ICLOUD_PASS_ACCOUNT1}
+      - --directory
+      - /data
+      - --cookie-directory
+      - /config
+      - --folder-structure
+      - "{:%Y/%m}"
+      - --auto-delete
+      - --log-level
+      - info
+
+  # Account 2 — auskommentiert bis eingerichtet
+  # icloudpd-account2:
+  #   image: icloudpd/icloudpd:latest
+  #   container_name: icloudpd-account2
+  #   restart: "no"
+  #   volumes:
+  #     - ./accounts/account2/cookies:/config
+  #     - /volume2/Backups/icloud/account2:/data
+  #   environment:
+  #     - TZ=Europe/Berlin
+  #   command:
+  #     - icloudpd
+  #     - --username
+  #     - ${ICLOUD_USER_ACCOUNT2}
+  #     - --password
+  #     - ${ICLOUD_PASS_ACCOUNT2}
+  #     - --directory
+  #     - /data
+  #     - --cookie-directory
+  #     - /config
+  #     - --folder-structure
+  #     - "{:%Y/%m}"
+  #     - --auto-delete
+  #     - --log-level
+  #     - info</pre>
+    </div>
+    <div class="info-box">
+      <p><strong>--auto-delete:</strong> Löscht Dateien auf der NAS wenn sie in iCloud gelöscht wurden. Weglassen für echtes Backup-Verhalten.</p>
+    </div>
+  </div>
+
+  <!-- 6. AUTH -->
+  <div class="section" id="auth">
+    <h2><span class="step-num">6</span> 2FA Authentifizierung</h2>
+    <p>Die Authentifizierung muss <strong>einmalig pro Account interaktiv</strong> durchgeführt werden. Das Gerät des jeweiligen Accountinhabers muss dabei erreichbar sein.</p>
+    <div class="info-box warning">
+      <p><strong>Nur per SSH möglich</strong> — dieser Schritt erfordert ein interaktives Terminal. Im DSM GUI nicht durchführbar.</p>
+    </div>
+    <h3>6.1 Einzelnen Account authentifizieren</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-cli" onclick="switchTab(this, 'auth-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="auth-cli" class="tab-pane pane-cli active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo docker run -it --rm   -v /volume1/docker/icloudpd/accounts/account1/cookies:/config   icloudpd/icloudpd:latest   icloudpd   --username appleID@example.com   --password xxxx-xxxx-xxxx-xxxx   --auth-only   --cookie-directory /config</pre>
+        </div>
+        <p>Ablauf:</p>
+        <ol style="margin-top:8px; padding-left:20px; color:rgb(160,174,192);">
+          <li>Befehl ausführen — Apple schickt Benachrichtigung ans Gerät</li>
+          <li>Auf dem Gerät <strong>"Erlauben"</strong> tippen</li>
+          <li>6-stelligen Code im Terminal eingeben → Enter</li>
+          <li><code>Authentication completed successfully</code> erscheint</li>
+        </ol>
+        <p style="margin-top:10px;">Cookie-Berechtigungen prüfen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ls -la /volume1/docker/icloudpd/accounts/account1/cookies/</pre>
+        </div>
+      </div>
+    </div>
+    <h3>6.2 Alle Accounts auf einmal (auth-all.sh)</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-cli" onclick="switchTab(this, 'auth-all-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="auth-all-cli" class="tab-pane pane-cli active">
+        <p>Script ausführbar machen <span class="chmod-note">⚠️ chmod erforderlich</span></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>chmod +x /volume1/docker/icloudpd/auth-all.sh</pre>
+        </div>
+        <p>Starten — alle Geräte bereithalten:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>bash /volume1/docker/icloudpd/auth-all.sh</pre>
+        </div>
+      </div>
+    </div>
+    <div class="info-box success" style="margin-top:15px;">
+      <p><strong>Cookie-Laufzeit:</strong> ~2 Monate. Bei Ablauf erscheint <code>Authentication required</code> im Log — dann Auth für den betroffenen Account wiederholen.</p>
+    </div>
+  </div>
+
+  <!-- 7. RUN-ALL -->
+  <div class="section" id="run-all">
+    <h2><span class="step-num">7</span> run-all.sh einrichten</h2>
+    <p>Das Skript startet alle Accounts nacheinander und wartet bis jeder seinen Download abgeschlossen hat.</p>
+    <h3>7.1 Skript ablegen und ausführbar machen</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'runall-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'runall-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="runall-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station → <code>run-all.sh</code> aus dem Repo nach <code>/volume1/docker/icloudpd/</code> kopieren</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Datei bearbeiten — in der ACCOUNTS Liste die aktiven Accounts eintragen</p></div>
+        <div class="info-box warning" style="margin-top:8px;">
+          <p><strong>Wichtig:</strong> chmod muss per SSH gesetzt werden — die GUI kann Ausführungsrechte nicht setzen.</p>
+        </div>
+      </div>
+      <div id="runall-cli" class="tab-pane pane-cli">
+        <p>Ausführungsrecht setzen <span class="chmod-note">⚠️ chmod erforderlich</span></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>chmod +x /volume1/docker/icloudpd/run-all.sh
+chmod +x /volume1/docker/icloudpd/auth-all.sh</pre>
+        </div>
+        <p>Prüfen ob korrekt gesetzt:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ls -la /volume1/docker/icloudpd/*.sh
+# Ergebnis: -rwxr-xr-x (x = ausführbar)</pre>
+        </div>
+        <p>Manuell starten (zum Testen):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>bash /volume1/docker/icloudpd/run-all.sh</pre>
+        </div>
+      </div>
+    </div>
+    <h3>7.2 Accounts in run-all.sh eintragen</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'runall-accounts-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'runall-accounts-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="runall-accounts-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>File Station → <code>/volume1/docker/icloudpd/run-all.sh</code> → Rechtsklick → Bearbeiten</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>ACCOUNTS Liste anpassen — aktive Accounts eintragen, Rest auskommentieren</p></div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ACCOUNTS=(
+  "account1"
+  "account2"
+  # "account3"  # noch nicht eingerichtet
+)</pre>
+        </div>
+      </div>
+      <div id="runall-accounts-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/run-all.sh</pre>
+        </div>
+        <p>ACCOUNTS Liste anpassen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>ACCOUNTS=(
+  "account1"
+  "account2"
+  # "account3"  # noch nicht eingerichtet
+)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. AUFGABENPLANER -->
+  <div class="section" id="aufgabenplaner">
+    <h2><span class="step-num">8</span> DSM Aufgabenplaner einrichten</h2>
+    <h3>8.1 Täglicher Sync</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'task-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+      </div>
+      <div id="task-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>Systemsteuerung → Aufgabenplaner → Erstellen → Geplanter Task → Benutzerdefiniertes Skript</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Name: <code>icloudpd Sync</code> | Benutzer: <code>root</code></p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Zeitplan: Täglich, gewünschte Uhrzeit (z.B. <code>07:00</code>)</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p>Skript:</p></div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>/bin/bash /volume1/docker/icloudpd/run-all.sh >> /volume1/docker/icloudpd/logs/sync.log 2>&amp;1</pre>
+        </div>
+        <div class="info-box warning" style="margin-top:8px;">
+          <p><strong>Voraussetzung:</strong> <code>run-all.sh</code> muss ausführbar sein (<code>chmod +x</code> per SSH, siehe Schritt 7).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. ACCOUNT HINZUFÜGEN -->
+  <div class="section" id="account-hinzufuegen">
+    <h2><span class="step-num">9</span> Neuen Account hinzufügen</h2>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'newacc-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'newacc-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="newacc-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>App-spezifisches Passwort erstellen → <a href="https://appleid.apple.com" target="_blank" style="color:rgb(126,184,247)">appleid.apple.com</a></p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>File Station → Ordner <code>/volume1/docker/icloudpd/accounts/neuername/cookies</code> anlegen</p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>File Station → Ordner <code>/volume2/Backups/icloud/neuername</code> anlegen</p></div>
+        <div class="gui-step"><span class="gui-step-num">4</span><p><code>.env</code> Datei in <code>accounts/neuername/</code> anlegen (Zugangsdaten)</p></div>
+        <div class="gui-step"><span class="gui-step-num">5</span><p>Root <code>.env</code> um neue Variablen ergänzen</p></div>
+        <div class="gui-step"><span class="gui-step-num">6</span><p>Service-Block in <code>compose.yaml</code> einkommentieren</p></div>
+        <div class="gui-step"><span class="gui-step-num">7</span><p>Container Manager → Projekt icloudpd → Aktion → Erstellen (nur neuer Service)</p></div>
+        <div class="gui-step"><span class="gui-step-num">8</span><p>2FA Auth per SSH durchführen (Schritt 6)</p></div>
+        <div class="gui-step"><span class="gui-step-num">9</span><p><code>run-all.sh</code> — Account in ACCOUNTS Liste eintragen</p></div>
+      </div>
+      <div id="newacc-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>mkdir -p /volume1/docker/icloudpd/accounts/neuername/cookies</pre>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>mkdir -p /volume2/Backups/icloud/neuername</pre>
+        </div>
+        <p>.env anlegen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/accounts/neuername/.env</pre>
+        </div>
+        <p>Berechtigungen setzen <span class="chmod-note">⚠️ chmod erforderlich</span></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>chmod 600 /volume1/docker/icloudpd/accounts/neuername/.env</pre>
+        </div>
+        <p>Container erstellen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>cd /volume1/docker/icloudpd &amp;&amp; sudo docker-compose -f compose.yaml up -d icloudpd-neuername</pre>
+        </div>
+      </div>
+    </div>
+    <h3>Account deaktivieren</h3>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'delacc-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'delacc-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="delacc-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>Container Manager → Projekt icloudpd → compose.yaml bearbeiten → Service-Block auskommentieren</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p><code>run-all.sh</code> bearbeiten → Account in ACCOUNTS Liste auskommentieren</p></div>
+        <p style="margin-top:8px; color:rgb(34,197,94);">✅ Daten auf der NAS bleiben vollständig erhalten.</p>
+      </div>
+      <div id="delacc-cli" class="tab-pane pane-cli">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/run-all.sh
+# Account in ACCOUNTS Liste auskommentieren:
+# "accountname"</pre>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>nano /volume1/docker/icloudpd/compose.yaml
+# Service-Block auskommentieren</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. LOGS -->
+  <div class="section" id="logs">
+    <h2><span class="step-num">10</span> Logs &amp; Monitoring</h2>
+    <div class="tab-group">
+      <div class="tab-buttons">
+        <button class="tab-btn active-gui" onclick="switchTab(this, 'logs-gui')"><span class="tab-icon">🖥️</span> DSM GUI</button>
+        <button class="tab-btn" onclick="switchTab(this, 'logs-cli')"><span class="tab-icon">💻</span> SSH</button>
+      </div>
+      <div id="logs-gui" class="tab-pane pane-gui active">
+        <div class="gui-step"><span class="gui-step-num">1</span><p>Container Manager → Container → <code>icloudpd-account1</code> → Protokoll</p></div>
+        <div class="gui-step"><span class="gui-step-num">2</span><p>Live-Logs werden direkt angezeigt</p></div>
+        <div class="gui-step"><span class="gui-step-num">3</span><p>Sync-Logs: File Station → <code>/volume1/docker/icloudpd/logs/sync.log</code></p></div>
+      </div>
+      <div id="logs-cli" class="tab-pane pane-cli">
+        <p>Gesamtlog live verfolgen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo tail -f /volume1/docker/icloudpd/logs/sync.log</pre>
+        </div>
+        <p>Einzelnen Account live verfolgen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo docker logs -f icloudpd-account1</pre>
+        </div>
+        <p>Fortschritt (Größe &amp; Dateianzahl):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo du -sh /volume2/Backups/icloud/account1/</pre>
+        </div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo find /volume2/Backups/icloud/account1/ -type f | wc -l</pre>
+        </div>
+        <p>Alle laufenden icloudpd Container:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>sudo docker ps | grep icloudpd</pre>
+        </div>
+        <p>Logs älter als 30 Tage aufräumen:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Kopieren</button>
+          <pre>find /volume1/docker/icloudpd/logs/ -name "*.log" -mtime +30 -delete</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. HINWEISE -->
+  <div class="section" id="hinweise">
+    <h2><span class="step-num">11</span> Hinweise &amp; Besonderheiten</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Thema</th><th>Info</th></tr>
+        <tr><td><strong>Erstdownload</strong></td><td>Kann Stunden bis Tage dauern — Apple drosselt den Download serverseitig</td></tr>
+        <tr><td><strong>Abgebrochener Sync</strong></td><td>Kein Problem — beim nächsten Start wird genau da weitergemacht. Keine Duplikate.</td></tr>
+        <tr><td><strong>Live Photos</strong></td><td>Werden als zwei Dateien gespeichert: <code>.HEIC</code> + <code>_HEVC.MOV</code></td></tr>
+        <tr><td><strong>GPS &amp; EXIF</strong></td><td>Bleiben vollständig erhalten</td></tr>
+        <tr><td><strong>--auto-delete</strong></td><td>In iCloud gelöschte Dateien werden auch auf der NAS gelöscht. Weglassen für echtes Backup.</td></tr>
+        <tr><td><strong>NAS löschen</strong></td><td>Hat keinen Einfluss auf iCloud — icloudpd ist One-Way</td></tr>
+        <tr><td><strong>Cookie-Ablauf</strong></td><td>~2 Monate. Bei <code>Authentication required</code> im Log → Auth erneut durchführen</td></tr>
+        <tr><td><strong>chmod 600</strong></td><td>.env Dateien schützen — nur root darf lesen. Immer nach dem Erstellen setzen.</td></tr>
+        <tr><td><strong>chmod +x</strong></td><td>Shell-Skripte müssen ausführbar sein. Einmalig per SSH setzen.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ZUSAMMENFASSUNG -->
+  <div class="summary-box">
+    <h2>✅ Setup-Checkliste</h2>
+    <ul>
+      <li>☐ Ordnerstruktur angelegt (volume1 + volume2)</li>
+      <li>☐ App-spezifische Passwörter für alle Accounts erstellt</li>
+      <li>☐ Account .env Dateien befüllt + <code>chmod 600</code> gesetzt</li>
+      <li>☐ Root .env befüllt + <code>chmod 600</code> gesetzt</li>
+      <li>☐ compose.yaml mit aktiven Accounts eingerichtet</li>
+      <li>☐ Container via docker-compose erstellt</li>
+      <li>☐ <code>chmod +x</code> für alle .sh Skripte gesetzt</li>
+      <li>☐ 2FA Auth für jeden Account durchgeführt (SSH)</li>
+      <li>☐ Erster Sync manuell gestartet und beobachtet</li>
+      <li>☐ DSM Aufgabenplaner für täglichen Sync eingerichtet</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="footer">
+  icloudpd — Synology NAS Setup Anleitung ·
+  <a href="https://github.com/Qauttrolab/icloudpd-synology-setup" target="_blank" style="color:rgb(126,184,247)">github.com/Qauttrolab/icloudpd-synology-setup</a> ·
+  <a href="https://github.com/icloudpd/icloudpd" target="_blank" style="color:rgb(126,184,247)">icloudpd auf GitHub</a>
+</div>
+
+<script>
+function switchTab(btn, paneId) {
+  const group = btn.closest('.tab-group');
+  group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-gui', 'active-cli'));
+  group.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(paneId);
+  const isCli = paneId.includes('cli');
+  btn.classList.add(isCli ? 'active-cli' : 'active-gui');
+  pane.classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.nextElementSibling;
+  navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+    btn.textContent = '✓ Kopiert';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Kopieren';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
